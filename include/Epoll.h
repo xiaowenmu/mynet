@@ -17,8 +17,8 @@ public:
 	
 	
 	void poll(int timeout,eventList *);
-	void updateHandler(Handler *);
-	void removeHandler(Handler *);
+	void updateHandler(Handler *);//通过epoll修改，如ADD还是DEL
+	void removeHandler(Handler *);//在MAP和epoll_ctl中删除该Handler（如果在epoll_ctl已添加过时就DEL，如果没有在epoll中就不做处理）
 	
 private:
 

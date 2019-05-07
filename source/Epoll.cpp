@@ -48,10 +48,12 @@ namespace mynet{
 	void Epoll::updateHandler(Handler *handler){//最多从epoll中删除掉Handler，不会再handlerMap中删掉
 		
 		int flag = handler->action;
+		
 		if(flag == Handler::New){//没有加入过epoll中的
 			assert(handlerMap.find(handler->getfd()) == handlerMap.end());
 			update(handler,EPOLL_CTL_ADD);
 			handler->setAction(Handler::Added);
+			handlerMap[handler->getfd()] = handler;
 		}
 		else if(flag == Handler::Deleted){//加入过后来被删除了的
 			assert(handlerMap.find(handler->getfd()) != handlerMap.end());
@@ -59,7 +61,7 @@ namespace mynet{
 			update(handler,EPOLL_CTL_ADD）;
 			//handler->setAction(Handler::Added); //放前面还是后面后面再看
 		}
-		else if(flag == Handler::Modify){//加入过，但是需要修改关注的动作的
+		else{//加入过，但是需要修改关注的动作的
 			assert(handlerMap.find(handler->getfd()) != handlerMap.end());
 			if(handler->noFocus()){
 				update(handler,EPOLL_CTL_DEL);
