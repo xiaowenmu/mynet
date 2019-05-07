@@ -6,6 +6,10 @@
 #include<sys/epoll.h>
 namespace mynet{
 	
+	const int Epoll::eventsSize = 32;
+	const int Epoll::resizeTimeMax = 1024 / eventsSize;
+	
+	
 	Epoll::Epoll():events(eventsSize){
 		epollfd = epoll_create(1);//参数没有什么意义，只要大于0就可
 		resizeTimes = 0;
