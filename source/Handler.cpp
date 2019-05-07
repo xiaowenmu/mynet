@@ -40,4 +40,31 @@ namespace mynet{
 		}
 		
 	}
+	
+	void Handler::enableRead(){
+		focus |= readAttention;
+		if(action == Added)
+			action = Modify;
+		reactor->updateHandler(this);
+		
+	}
+	void Handler::enableWrite(){
+		focus |= writeAttention;
+		reactor->updateHandler(this);
+	}
+	void Handler::disableRead(){
+		focus &= ~readAttention;
+		reactor->updateHandler(this);
+	}
+	void Handler::disableWrite(){
+		focus &= ~writeAttention;
+		reactor->updateHandler(this);
+	}
+	void Handler::disableAll(){//如果action==New or ==Deleted ,就不做任何动作（因为把这个添加进epoll里面也没什么用）,如果是Added就把这个文件描述符从epoll中删除
+		focus = noAttention;
+		if(action == Added){
+			focus = noAttention;
+			reactor->updateHandler(this);
+		}
+	}
 }

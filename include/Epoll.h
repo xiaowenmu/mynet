@@ -21,7 +21,7 @@ public:
 	void removeHandler(Handler *);//在MAP和epoll_ctl中删除该Handler（如果在epoll_ctl已添加过时就DEL，如果没有在epoll中就不做处理）
 	
 private:
-
+	
 	void fillActiveEventList(int,activeHandlerList *);
 	void update(Handler *,int);
 	int resizeTimes;
