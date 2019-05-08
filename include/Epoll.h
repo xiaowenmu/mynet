@@ -12,6 +12,7 @@ class Epoll：public Noncopyable{
 	
 public:
 	typedef std::vector<struct epoll_event> eventList;
+	typedef std::vector<Handler *> activeHandlerList;
 	explicit Epoll();
 	~Epoll();
 	

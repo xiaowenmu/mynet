@@ -50,6 +50,8 @@ public:
 	}
 	
 	
+	void removeHandler();
+	
 	void enableRead();
 		
 	void enableWrite();
