@@ -1,13 +1,18 @@
 #ifndef HANDLER_H
 #define HANDLER_H
-
-
+#include<functional>
+#include"include/Noncopyable.h"
 #include"include/MacroDefine.h"
+//#include"include/Reactor.h"
 
-class Handler：public Noncopyable{
+namespace mynet{
+
+class Reactor;
+
+class Handler:public Noncopyable{
 
 	typedef std::function<void ()> ReadCallBack;
-	typedef std::function<void ()> RriteCallBack;
+	typedef std::function<void ()> WriteCallBack;
 	typedef std::function<void ()> CloseCallBack;
 	typedef std::function<void ()> ErrCallBack;
 public:
@@ -25,7 +30,7 @@ public:
 	
 	
 	
-	explicit Handler(const Reactor *,int fd);
+	explicit Handler(Reactor *reac,int fd);
 	~Handler();
 	int getfd() const{ return fd; }
 	void setHappened(int event){ happened = event; }
@@ -33,6 +38,7 @@ public:
 	void setAction(int act){ action = act; }
 	int getFocus(){ return focus; }
 	int getAction(){ return action; }
+	
 	
 	
 	
@@ -50,7 +56,7 @@ public:
 	}
 	
 	
-	void removeHandler();
+	void removeSelf();
 	
 	void enableRead();
 		
@@ -68,15 +74,18 @@ public:
 private:
 	Reactor *reactor;
 	const int fd;
-	int action;  //给epoll_ctl使用的，如New还是Modify
+	int action; //给epoll_ctl使用的，如New还是Modify
 	int happened;//保存epoll返回时发生的事件，是read还是write等
 	int focus;   //表示关注读事件还是写事件还是都不关注，如果都不关注就可以在epoll中删除掉了，并把标志设为Deleted。如focus == noAttention 代表可以从handlerMap中删除
 	ReadCallBack readFunc;
 	WriteCallBack writeFunc;
-	ColseCallBack closeFunc;
+	CloseCallBack closeFunc;
 	ErrCallBack errFunc;
 };
 
+
+
+}
 
 
 #endif

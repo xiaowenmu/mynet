@@ -1,5 +1,11 @@
 #include"include/Handler.h"
 #include"include/Reactor.h"
+#include<assert.h>
+#include<sys/epoll.h>
+#include<unistd.h>
+
+
+
 
 namespace mynet{
 	
@@ -14,12 +20,16 @@ namespace mynet{
 	
 	const int Handler::nothingHappened = 0;
 	
+
 	
-	Handler::Handler(const Reactor *reac,int fd1):reactor(reac),fd(fd1),action(New),happened(nothingHappened),focus(noAttention){
+	Handler::Handler(Reactor *reac,int fd1):reactor(reac),fd(fd1),action(New),happened(nothingHappened),focus(noAttention){
 		
 	}
 	Handler::~Handler(){
-		//close(fd);
+		assert(action != New);
+		disableAll();
+		removeSelf();
+		close(fd);
 	}
 	
 	
@@ -42,9 +52,8 @@ namespace mynet{
 		
 	}
 	
-	void removeHandler(){
+	void Handler::removeSelf(){
 		reactor->removeHandler(this);
-		
 	}
 	
 	void Handler::enableRead(){
@@ -67,7 +76,7 @@ namespace mynet{
 	void Handler::disableAll(){//如果action==New or ==Deleted ,就不做任何动作（因为把这个添加进epoll里面也没什么用）,如果是Added就把这个文件描述符从epoll中删除
 		focus = noAttention;
 		if(action == Added){
-			//focus = noAttention;
+			
 			reactor->updateHandler(this);
 		}
 	}
