@@ -24,6 +24,7 @@ public:
 	void loop(int ms);//
 	void wakeupReactor();
 	void readWakeupFd();
+	void stopLoop();
 
 
 private:
@@ -31,6 +32,7 @@ private:
 	activeHandlerList activeList;
 	int wakeupFd;
 	std::unique_ptr<Handler> wakeupHandler;
+	bool stop;
 	
 };
 

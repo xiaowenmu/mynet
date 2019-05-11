@@ -27,9 +27,9 @@ namespace mynet{
 	}
 	Handler::~Handler(){
 		assert(action != New);
-		disableAll();
-		removeSelf();
-		close(fd);
+		//disableAll();//别关闭，其他的地方会关闭的
+		//removeSelf();
+		//close(fd);
 	}
 	
 	
@@ -52,27 +52,27 @@ namespace mynet{
 		
 	}
 	
-	void Handler::removeSelf(){
+	void Handler::removeSelf(){//非线程安全，因为每个reactor中的Map是非线程安全的
 		reactor->removeHandler(this);
 	}
 	
-	void Handler::enableRead(){
+	void Handler::enableRead(){//非线程安全，因为每个reactor中的Map是非线程安全的
 		focus |= readAttention;
 		reactor->updateHandler(this);
 		
 	}
-	void Handler::enableWrite(){
+	void Handler::enableWrite(){//非线程安全，因为每个reactor中的Map是非线程安全的
 		focus |= writeAttention;
 		reactor->updateHandler(this);
 	}
-	void Handler::disableRead(){
+	void Handler::disableRead(){//非线程安全，因为每个reactor中的Map是非线程安全的
 		focus &= ~readAttention;
 		reactor->updateHandler(this);
 	}
-	void Handler::disableWrite(){
+	void Handler::disableWrite(){//非线程安全，因为每个reactor中的Map是非线程安全的
 		focus &= ~writeAttention;
 		reactor->updateHandler(this);
-	}
+	}                          //非线程安全，因为每个reactor中的Map是非线程安全的
 	void Handler::disableAll(){//如果action==New or ==Deleted ,就不做任何动作（因为把这个添加进epoll里面也没什么用）,如果是Added就把这个文件描述符从epoll中删除
 		focus = noAttention;
 		if(action == Added){

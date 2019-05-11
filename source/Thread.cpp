@@ -23,7 +23,7 @@ namespace mynet{
 	};
 	
 	void *StartThread(void *dat){
-		//started = true;
+		started = true;
 		ThreadData *data = static_cast<ThreadData*>(dat);
 		*(data->tid) = mynet::Thread::gettid();
 		//condition->notify();
@@ -41,7 +41,8 @@ namespace mynet{
 	};
 	
 	void Thread::run(){
-		started = true;
+		assert(started == false);
+		//started = true;
 		ThreadData *data = new ThreadData(func,&condition,&tid);
 		if(pthread_create(&threadId,nullptr,StartThread,data)){
 			delete data;
@@ -49,6 +50,7 @@ namespace mynet{
 			ERRRET(-1);
 		}
 		else{
+			pthread_detach(threadId);
 			condition.wait();
 		}
 		return;
@@ -59,11 +61,11 @@ namespace mynet{
 			pthread_detach(threadId);
 	}
 }
-	int Thread::join(){
+	int Thread::join(){  
 		if(started && !joined){
 			joined = true;
 			return pthread_join(threadId,NULL);
-	}
+		}
 		else 
 			ERRRET(-1);
 	}

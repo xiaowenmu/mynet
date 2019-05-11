@@ -14,7 +14,7 @@ namespace mynet{
 		
 	}
 	
-	Reactor::Reactor():epoll(new Epoll()),wakeupFd(createEventFd()),wakeupHandler(new Handler(this,wakeupFd)){
+	Reactor::Reactor():epoll(new Epoll()),wakeupFd(createEventFd()),wakeupHandler(new Handler(this,wakeupFd)),stop(false){
 		
 		wakeupHandler->setReadCallBack(std::bind(&Reactor::readWakeupFd,this));
 		wakeupHandler->enableRead();
@@ -35,7 +35,7 @@ namespace mynet{
 	}
 	void Reactor::loop(int ms){
 		
-		while(1){
+		while(!stop){
 			
 			activeList.clear();
 			epoll->poll(ms,&activeList);
@@ -47,7 +47,15 @@ namespace mynet{
 		
 	}
 	
+	void stopLoop(){//在别的线程执行的
+		assert(stop == false);
+		stop = true;
+		wakeupReactor();
+	}
+	
+	
 	void Reactor::wakeupReactor(){
+		//assert(stop == false);
 		uint64_t one = 1;
 		ssize_t n = write(wakeupFd, &one, sizeof(one));
 		ERRRET(n != sizeof(uint64_t));
@@ -55,7 +63,7 @@ namespace mynet{
 	
 	
 	void Reactor::readWakeupFd(){
-		uint64_t one;
+		uint64_t one = 1;
 		ssize_t n = read(wakeupFd,&one,sizeof(one));	
 		ERRRET(n != sizeof(uint64_t));
 		

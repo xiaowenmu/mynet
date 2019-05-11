@@ -25,6 +25,7 @@ public:
 	~Thread();
 	void run();
 	int join();
+	bool threadStarted(){ return started; }
 
 private:
 	pid_t tid;
