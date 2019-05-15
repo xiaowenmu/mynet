@@ -3,8 +3,11 @@
 
 #include<vector>
 #include<memory>
+#include<functional>
 #include"include/MacroDefine.h"
 #include"include/Noncopyable.h"
+#include"include/Mutex.h"
+#include"include/Thread.h"
 
 namespace mynet{
 
@@ -16,6 +19,7 @@ class Reactor:public Noncopyable{
 	
 public:
 	typedef std::vector<Handler *> activeHandlerList;
+	typedef std::function<void ()> LoopFunc;
 	Reactor();
 	~Reactor();
 
@@ -25,14 +29,26 @@ public:
 	void wakeupReactor();
 	void readWakeupFd();
 	void stopLoop();
+	void runInLoop(LoopFunc);
+	void queueInLoop(LoopFunc);
+	bool isInReactorThread(){ return threadId == Thread::gettid();}
 
+	void printAllHandler();
+		
+	
 
 private:
+	void handleLoopFunc();
 	std::unique_ptr<Epoll> epoll;
 	activeHandlerList activeList;
 	int wakeupFd;
+	pid_t threadId;
 	std::unique_ptr<Handler> wakeupHandler;
 	bool stop;
+	bool callingLoopFunc;
+	mutable Mutex mutex;
+	std::vector<LoopFunc> loopFuncList;
+	
 	
 };
 

@@ -4,6 +4,10 @@
 #include"include/MacroDefine.h"
 #include<sys/eventfd.h>
 #include<unistd.h>
+#include"include/ScopeMutex.h"
+
+#include<iostream>
+
 
 namespace mynet{
 	
@@ -14,7 +18,7 @@ namespace mynet{
 		
 	}
 	
-	Reactor::Reactor():epoll(new Epoll()),wakeupFd(createEventFd()),wakeupHandler(new Handler(this,wakeupFd)),stop(false){
+	Reactor::Reactor():epoll(new Epoll()),wakeupFd(createEventFd()),wakeupHandler(new Handler(this,wakeupFd)),stop(false),threadId(Thread::gettid()),callingLoopFunc(false){
 		
 		wakeupHandler->setReadCallBack(std::bind(&Reactor::readWakeupFd,this));
 		wakeupHandler->enableRead();
@@ -42,12 +46,13 @@ namespace mynet{
 			for(auto handler : activeList){
 				handler->handleEvent();
 			}
+			handleLoopFunc();
 			
 		}
 		
 	}
 	
-	void stopLoop(){//在别的线程执行的
+	void Reactor::stopLoop(){//在别的线程执行的
 		assert(stop == false);
 		stop = true;
 		wakeupReactor();
@@ -69,6 +74,46 @@ namespace mynet{
 		
 	}
 	
+	
+	void Reactor::runInLoop(LoopFunc func){//处理比较紧急的事件，比如有新的文件描述符到来
+		if(isInReactorThread()){
+			
+			func();
+		}
+		else{
+			{
+				ScopeMutex lock(mutex);
+				loopFuncList.push_back(std::move(func));
+			}
+			wakeupReactor();
+		}
+		
+	}
+	void Reactor::queueInLoop(LoopFunc func){//处理不紧急的事件，比如关闭文件描述符
+		{
+			ScopeMutex lock(mutex);
+			loopFuncList.push_back(std::move(func));
+		}
+		if(!isInReactorThread() || callingLoopFunc)
+			wakeupReactor();
+		
+	}
+	
+	void Reactor::handleLoopFunc(){
+		std::vector<LoopFunc> loopFunc;
+		callingLoopFunc = true;
+		{
+			ScopeMutex lock(mutex);
+			loopFunc.swap(loopFuncList);
+		}
+		for(const LoopFunc &func : loopFunc)
+			func();
+		callingLoopFunc = false;
+		
+	}
+	void Reactor::printAllHandler(){
+		epoll->printAllHandler();
+	}
 	
 	
 }

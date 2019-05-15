@@ -5,6 +5,7 @@
 #include"include/Noncopyable.h"
 #include"include/Mutex.h"
 #include"include/CondNoMutex.h"
+#include"include/Thread.h"
 
 namespace mynet{
 
@@ -13,7 +14,7 @@ class Reactor;
 class ReactorThread:public Noncopyable{
 	
 public:
-	ReactorThread(int num);
+	explicit ReactorThread(int num);
 	~ReactorThread();
 
 	Reactor* startLoop();

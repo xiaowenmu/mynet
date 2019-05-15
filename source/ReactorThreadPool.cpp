@@ -1,11 +1,13 @@
 #include"include/ReactorThreadPool.h"
 #include<memory>
 #include<assert.h>
-
+#include"include/ReactorThread.h"
+#include"include/Reactor.h"
 namespace mynet{
 	
-	ReactorThreadPool::ReactorThreadPool(int num):threadNum(num),started(false),nextReactor(0){
-		
+	ReactorThreadPool::ReactorThreadPool(int num):threadNum(num),started(false),nextReactor(1){//编号为0的reactor是给accept用的
+		assert(num >= 2);
+		//startThreadPool();
 		
 	}
 	ReactorThreadPool::~ReactorThreadPool(){
@@ -31,19 +33,27 @@ namespace mynet{
 		
 	}
 	
-	Reactor *getNextReactor(){
+	Reactor *ReactorThreadPool::getNextReactor(){
 		assert(started);
 		Reactor *reac = allReactor[nextReactor];
 		++nextReactor;
 		if(nextReactor == allReactor.size())
-			nextReactor = 0;
+			nextReactor = 1;
 		
 		return reac;
 		
 	}
 	
+	Reactor *ReactorThreadPool::getMainReactor(){
+		return allReactor[0];
+		
+	}
 	
-	
+	void ReactorThreadPool::printAllHandler(){
+		for(int i = 0; i < allReactor.size(); ++i)
+			allReactor[i]->printAllHandler();
+	}
+
 	
 	
 }

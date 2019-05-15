@@ -5,6 +5,10 @@
 #include<assert.h>
 #include<sys/epoll.h>
 #include<unistd.h>
+
+
+#include<iostream>
+
 namespace mynet{
 	
 	const int Epoll::eventsSize = 32;
@@ -55,6 +59,9 @@ namespace mynet{
 		int flag = handler->getAction();
 		
 		if(flag == Handler::New){//没有加入过epoll中的
+	
+						
+
 			assert(handlerMap.find(handler->getfd()) == handlerMap.end());
 			update(handler,EPOLL_CTL_ADD);
 			handler->setAction(Handler::Added);
@@ -100,6 +107,7 @@ namespace mynet{
 	}
 	
 	void Epoll::removeHandler(Handler *handler){
+		
 		assert(handlerMap.find(handler->getfd()) != handlerMap.end());
 		assert(handler->noFocus());//只要是noFocus就可以删除
 		assert(handler->getAction() != Handler::New);
@@ -113,7 +121,9 @@ namespace mynet{
 	}
 	
 	
-	
+	void Epoll::printAllHandler(){
+		std::cout<< handlerMap.size() << std::endl;
+	}	
 	
 	
 	

@@ -8,6 +8,9 @@
 #include<sys/epoll.h>
 #include"include/Noncopyable.h"
 
+
+#include<iostream>
+
 namespace mynet{
 
 class Handler;	
@@ -26,6 +29,10 @@ public:
 	void updateHandler(Handler *);//通过epoll修改，如ADD还是DEL
 	void removeHandler(Handler *);//在MAP和epoll_ctl中删除该Handler（如果在epoll_ctl已添加过时就DEL，如果没有在epoll中就不做处理）
 	
+	void printAllHandler();
+		
+
+
 private:
 	
 	void fillActiveEventList(int,activeHandlerList *);

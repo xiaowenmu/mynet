@@ -6,6 +6,7 @@
 #include"include/MacroDefine.h"
 #include"include/Noncopyable.h"
 #include"include/Mutex.h"
+//#include"include/Condition.h"
 
 
 namespace mynet{
@@ -15,16 +16,17 @@ class CondNoMutex:public Noncopyable{
 public:
 	explicit CondNoMutex(Mutex &mu):mutex(mu){
 		
-		RETCHECK(pthread_cond_init(&cond,NULL);
+		RETCHECK(pthread_cond_init(&cond,NULL));
 		
 	}
 	~CondNoMutex(){
 		
-		RETCHECK(pthread_cond_destory(&cond);
+		RETCHECK(pthread_cond_destroy(&cond));
+		
 	}
 	
 	void wait(){
-		RETCHECK(pthread_cond_wait(&cond,mutex.getMutex());
+		RETCHECK(pthread_cond_wait(&cond,mutex.getMutex()));
 		
 	}
 	
@@ -48,14 +50,6 @@ private:
 	
 	
 }
-
-
-
-
-
-
-
-
 
 
 #endif

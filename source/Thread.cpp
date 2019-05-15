@@ -16,14 +16,14 @@ namespace mynet{
 				fun();
 			}
 			catch (...){
-				fprintf(stderr, "unknown exception caught in Thread %s\n", "cuowo");
+				fprintf(stderr, "unknown exception caught in Thread %s\n", "cuowu");
 				throw; 
 			}
 		}
 	};
 	
 	void *StartThread(void *dat){
-		started = true;
+		//started = true;
 		ThreadData *data = static_cast<ThreadData*>(dat);
 		*(data->tid) = mynet::Thread::gettid();
 		//condition->notify();
@@ -42,7 +42,7 @@ namespace mynet{
 	
 	void Thread::run(){
 		assert(started == false);
-		//started = true;
+		started = true;
 		ThreadData *data = new ThreadData(func,&condition,&tid);
 		if(pthread_create(&threadId,nullptr,StartThread,data)){
 			delete data;

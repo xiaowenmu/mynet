@@ -1,10 +1,15 @@
 #include"include/ReactorThread.h"
 #include"include/ScopeMutex.h"
 #include<assert.h>
+#include<functional>
+#include"include/Reactor.h"
+
+
+
 
 namespace mynet{
 	
-	ReactorThread::ReactorThread(int num):thread(std::bind(ReactorThread::threadFunc,this),num),reactor(nullptr),mutex(),cond(mutex){
+	ReactorThread::ReactorThread(int num):thread(std::bind(&ReactorThread::threadFunc,this),num),reactor(nullptr),mutex(),cond(mutex){
 		
 	}
 	ReactorThread::~ReactorThread(){//待补充
@@ -18,7 +23,7 @@ namespace mynet{
 	}
 	
 	
-	Reactor* startLoop(){
+	Reactor* ReactorThread::startLoop(){
 		assert(!thread.threadStarted());
 		thread.run();
 		{
@@ -42,7 +47,7 @@ namespace mynet{
 			
 		}
 		
-		reac.loop();
+		reac.loop(-1);
 		
 		ScopeMutex lock(mutex);
 		reactor = nullptr;

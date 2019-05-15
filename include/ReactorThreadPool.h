@@ -6,8 +6,8 @@
 #include<vector>
 
 namespace mynet{
-	
-	
+class Reactor;
+class ReactorThread;
 	
 class ReactorThreadPool:public Noncopyable{
 	
@@ -17,7 +17,10 @@ public:
 	
 	void startThreadPool();
 	Reactor *getNextReactor();
+	Reactor *getMainReactor();
 
+	void printAllHandler();
+	
 
 private:
 	int threadNum;
