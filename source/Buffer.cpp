@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<algorithm>
 #include<assert.h>
+#include<sys/uio.h>
 namespace mynet{
 	const size_t Buffer::BUFSIZE = 1024;//如果要修改则下面的getEndBias,getBias也要修改
 	
@@ -207,8 +208,53 @@ namespace mynet{
 			
 			
 			
-			
 		}
+		
+		
+	}
+	
+	
+	
+	size_t Buffer::readFd(int fd){
+		char extraBuf[65536];
+		size_t leftBytes = total - end;
+		size_t freeBlocks = (leftBytes + BUFSIZE - 1)/BUFSIZE;
+		size_t vecNums = freeBlocks+1;
+		struct iovec vec[vecNums];
+		if(isFull()){
+			vec[0].iov_base = extraBuf;
+			vec[0].iov_len = sizeof(extraBuf);
+		}
+		else{
+			vec[0].iov_base = getEndPtr();
+			vec[0].iov_len = BUFSIZE - getEndBias();
+			size_t endBlock = end / BUFSIZE;
+			std::list<char *>::iterator itr = bufferList.begin();
+			advance(itr,endBlock);
+			
+			for(int i = 0; i < freeBlocks-1; ++i){
+				++itr;
+				vec[i+1].iov_base = *itr;
+				vec[i+1].iov_len = BUFSIZE;
+				
+			}
+			vec[freeBlocks].iov_base = extraBuf;
+			vec[freeBlocks].iov_len = sizeof(extraBuf);
+			const ssize_t n = readv(fd, vec, vecNums);
+			if(n < 0){
+				assert(false);
+			}
+			else if(n <= leftBytes){
+				
+				end += n;
+			}
+			else{//n > leftBytes
+				end = total;
+				append(extraBuf,n-leftBytes);
+				
+			}
+		}
+		
 		
 	}
 	

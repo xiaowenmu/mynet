@@ -42,7 +42,6 @@ public:
 		
 	size_t readFd(int fd);
 	
-	
 
 private:
 	
@@ -55,6 +54,10 @@ private:
 	size_t getBias(size_t num){
 		
 		return num & 0x3FF;
+	}
+	
+	bool isFull(){
+		return end == total;
 	}
 	
 	char *getStartPtr();
