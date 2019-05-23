@@ -5,6 +5,7 @@
 #include<algorithm>
 #include<assert.h>
 #include<sys/uio.h>
+#include<errno.h>
 namespace mynet{
 	const size_t Buffer::BUFSIZE = 1024;//如果要修改则下面的getEndBias,getBias也要修改
 	
@@ -73,6 +74,10 @@ namespace mynet{
 		}
 		
 	}
+	
+	
+	
+	
 	
 	void Buffer::append(char *data,size_t n){ //往buffer里面写数据，从data开始写，写n个字节
 		char *dataTemp = data;
@@ -214,12 +219,12 @@ namespace mynet{
 	}
 	
 	
-	
+	//返回Buffer中剩余的字节数
 	size_t Buffer::readFd(int fd){
 		char extraBuf[65536];
 		size_t leftBytes = total - end;
 		size_t freeBlocks = (leftBytes + BUFSIZE - 1)/BUFSIZE;
-		size_t vecNums = freeBlocks+1;
+		int vecNums = freeBlocks+1;
 		struct iovec vec[vecNums];
 		if(isFull()){
 			vec[0].iov_base = extraBuf;
@@ -240,23 +245,114 @@ namespace mynet{
 			}
 			vec[freeBlocks].iov_base = extraBuf;
 			vec[freeBlocks].iov_len = sizeof(extraBuf);
-			const ssize_t n = readv(fd, vec, vecNums);
-			if(n < 0){
-				assert(false);
-			}
-			else if(n <= leftBytes){
-				
-				end += n;
-			}
-			else{//n > leftBytes
-				end = total;
-				append(extraBuf,n-leftBytes);
-				
-			}
 		}
+		ssize_t n = readv(fd, vec, vecNums);
+		if(n < 0){
+			assert(false);
+		}
+		else if(n <= leftBytes){
+				
+			end += n;
+		}
+		else{//n > leftBytes
+			end = total;
+			append(extraBuf,n-leftBytes);
+				
+		}
+		return n;
+		//return end-start;
 		
 		
 	}
 	
+	
+	
+	size_t Buffer::writeFd(int fd){
+		size_t allBytes = end - start;
+		if(allBytes == 0)
+			return 0;
+		size_t n;
+		if(allBytes <= BUFSIZE - start){
+			struct iovec vec;
+			vec.iov_base = getStartPtr();
+			vec.iov_len = allBytes;
+			n = writev(fd,&vec,1);
+			if(n == allBytes){
+				start = 0;
+				end = 0;
+			}
+			else if(n >= 0){
+				start += n;
+			}
+			
+		}
+		else{//allBytes > BUFSIZE - start
+			size_t firstBlockDataBytes = BUFSIZE - start;
+			int vecNums = 1 + (allBytes - firstBlockDataBytes + BUFSIZE - 1) / BUFSIZE;
+			struct iovec vec[vecNums];
+			vec[0].iov_base = getStartPtr();
+			vec[0].iov_len = BUFSIZE - start;
+			std::list<char *>::iterator itr = bufferList.begin();
+			for(int i = 0; i < vecNums-2; ++i){
+				++itr;
+				vec[i+1].iov_base = *itr;
+				vec[i+1].iov_len = BUFSIZE;
+				
+			}
+			++itr;
+			vec[vecNums-1].iov_base = *itr;
+			vec[vecNums-1].iov_len = getEndBias();
+			n = writev(fd,vec,vecNums);
+			if(n == allBytes){
+				start = 0;
+				end = 0;
+			}
+			else if(n >= 0 && n < BUFSIZE - start){
+				 start += n;
+			}
+			else if(n >= BUFSIZE - start){
+				size_t temp = n;
+				temp -= (BUFSIZE - start);
+				size_t blocks = 1;
+				blocks += (temp / BUFSIZE);
+				std::list<char *>::iterator itr = bufferList.begin();
+				advance(itr,blocks);
+				bufferList.splice(bufferList.begin(),bufferList,itr,bufferList.end());
+				start = getBias(temp);
+				end = (allBytes - n) + start;
+			}
+			
+			
+		}
+		
+		
+			
+			
+		if(n < 0){
+		
+			switch(errno){
+				//case EAGAIN:
+				case EWOULDBLOCK:
+				case EINTR:
+					break;
+				case EBADF:
+				case EDESTADDRREQ:
+				case EDQUOT:
+				case EFAULT:
+				case EFBIG:
+				case EINVAL:
+				case EIO:
+				case ENOSPC:
+				case EPIPE:
+					assert(false);
+					break;
+				default:
+					assert(false);
+					break;
+			
+			}
+		
+		}
+	}
 	
 }

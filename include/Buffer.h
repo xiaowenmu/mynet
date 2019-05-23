@@ -42,6 +42,10 @@ public:
 		
 	size_t readFd(int fd);
 	
+	size_t writeFd(int fd);
+	
+	bool isEmpty(){ return end == start; }
+	
 
 private:
 	

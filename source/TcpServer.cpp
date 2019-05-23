@@ -8,6 +8,7 @@
 #include"include/ReactorThreadPool.h"
 #include"include/Accept.h"
 #include"include/Reactor.h"
+#include"include/Connection.h"
 
 
 
@@ -32,20 +33,23 @@ namespace mynet{
 		mainReactor->runInLoop(std::bind(&Accept::listen, serverAccept->getPointer()));
 		
 	}
+
 	
+
 	void TcpServer::newConnection(int fd){ //不用担心线程安全问题，只会在主reactor中调用
 		int flag = fcntl(fd,F_GETFL,0);
 		flag |= O_NONBLOCK;
 		fcntl(fd,F_SETFL,flag);
 		Reactor *nextReactor = reactorPool->getNextReactor();
-		nextReactor->runInLoop(std::bind(&TcpServer::createHandler,this,nextReactor,fd)); 
-		
+		ConnectionPtr con(new Connection(nextReactor,fd));
+		con->setMessageCallBack(messageFunc);
+		nextReactor->runInLoop(std::bind(&Connection::connectEstablished, con));
 		
 		
 		
 	}
 	
-	void TcpServer::readFunc(Handler *handler){
+	/*void TcpServer::readFunc(Handler *handler){
 		char buf[1024];
 		int ret;
 		while(ret != 0){
@@ -56,7 +60,7 @@ namespace mynet{
 		close(handler->getfd());
 		
 		
-	}
+	}*/
 	
 	/*void writeFunc(int fd){
 		
@@ -72,15 +76,11 @@ namespace mynet{
 		
 	}*/
 	
-	void TcpServer::createHandler(Reactor *reac,int fd){
+	/*void TcpServer::createHandler(Reactor *reac,int fd){
 		Handler *conHandler = new Handler(reac,fd);
-		conHandler->setReadCallBack(std::bind(&TcpServer::readFunc,this,conHandler));  // 读完了之后就写。
-		/*//conHandler.setWriteCallBack(...........);//暂时不用
-		conHandler.setErrCallBack(...........);  //
-		//conHandler.setCloseCallBack*/
-		conHandler->enableRead();
+		ConnectionPtr con(new Connection(
 		
-	}
+	}*/
 	
 	
 	void TcpServer::printAllHandler(){

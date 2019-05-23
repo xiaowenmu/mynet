@@ -16,7 +16,10 @@ namespace mynet{
 	}
 	
 	
-	
+	void ReactorThreadPool::stopAll(){
+		for(auto s : allReactor)
+			s->stopLoop();
+	}
 	
 	void ReactorThreadPool::startThreadPool(){
 		assert(started == false);

@@ -28,6 +28,7 @@ namespace mynet{
 		wakeupHandler->disableAll();
 		wakeupHandler->removeSelf();
 		close(wakeupFd);
+		
 	}
 	
 	

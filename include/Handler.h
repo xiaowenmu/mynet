@@ -3,6 +3,7 @@
 #include<functional>
 #include"include/Noncopyable.h"
 #include"include/MacroDefine.h"
+#include<memory>
 //#include"include/Reactor.h"
 
 namespace mynet{
@@ -70,6 +71,8 @@ public:
 		
 	
 	void handleEvent();
+	
+	void tie(const std::shared_ptr<void>& obj);
 
 private:
 	Reactor *reactor;
@@ -81,6 +84,7 @@ private:
 	WriteCallBack writeFunc;
 	CloseCallBack closeFunc;
 	ErrCallBack errFunc;
+	std::shared_ptr<void> con;
 };
 
 

@@ -22,16 +22,20 @@ namespace mynet{
 	
 
 	
+	
 	Handler::Handler(Reactor *reac,int fd1):reactor(reac),fd(fd1),action(New),happened(nothingHappened),focus(noAttention){
 		
 	}
 	Handler::~Handler(){
-		assert(action != New);
+		//assert(action != New);
 		//disableAll();//别关闭，其他的地方会关闭的
 		//removeSelf();
 		//close(fd);
 	}
 	
+	void Handler::tie(const std::shared_ptr<void>& obj){
+		con = obj;
+	}
 	
 	
 	void Handler::handleEvent(){
@@ -81,3 +85,6 @@ namespace mynet{
 		}
 	}
 }
+
+
+

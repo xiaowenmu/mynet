@@ -20,6 +20,8 @@ public:
 	Reactor *getMainReactor();
 
 	void printAllHandler();
+	void stopAll();
+		
 	
 
 private:

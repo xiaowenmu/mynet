@@ -118,10 +118,10 @@ namespace mynet{
 				case ENOMEM:
 				case ENOTSOCK:
 				case EOPNOTSUPP:
-					assert(-1);
+					assert(false);
 					break;
 				default:
-					assert(-1);
+					assert(false);
 					break;
 			}
 			
