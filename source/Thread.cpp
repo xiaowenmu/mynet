@@ -50,7 +50,7 @@ namespace mynet{
 			ERRRET(-1);
 		}
 		else{
-			pthread_detach(threadId);
+			//pthread_detach(threadId);
 			condition.wait();
 		}
 		return;

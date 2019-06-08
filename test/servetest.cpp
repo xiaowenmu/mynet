@@ -11,6 +11,7 @@
 #include<fcntl.h>
 //typedef std::shared_ptr<Connection> ConnectionPtr;
 void messageFunc(const mynet::ConnectionPtr &con,mynet::Buffer *buffer){
+	
 	char buf[20];
 	buffer->retrieve(buf,20);
 	printf("receive %s \n",buf);
